@@ -1,0 +1,107 @@
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+janMutations <- read.csv(file = 'uk_jan.csv')
+febMutations <- read.csv(file = 'uk_feb.csv')
+marMutations <- read.csv(file = 'uk_mar.csv')
+head(janMutations)
+```
+
+```{r}
+janSamples =unique(janMutations$Sequence.ID)
+febSamples =unique(febMutations$Sequence.ID)
+marSamples =unique(marMutations$Sequence.ID)
+head(janSamples)
+```
+
+
+```{r}
+numOfMutationsJan=janMutations %>% group_by(Sequence.ID)%>% summarise(Count=n())
+numOfMutationsFeb=febMutations %>% group_by(Sequence.ID)%>% summarise(Count=n())
+numOfMutationsMar=marMutations %>% group_by(Sequence.ID)%>% summarise(Count=n())
+head(numOfMutationsJan)
+```
+
+```{r}
+summary(numOfMutationsJan$Count)
+```
+
+```{r}
+summary(numOfMutationsFeb$Count)
+```
+
+```{r}
+summary(numOfMutationsMar$Count)
+```
+
+
+Freq by AA Mutations
+```{r}
+mutationsCountJan=janMutations %>% group_by(AAMutation)%>% summarise(Count=n())
+mutationsCountFeb=febMutations %>% group_by(AAMutation)%>% summarise(Count=n())
+mutationsCountMar=marMutations %>% group_by(AAMutation)%>% summarise(Count=n())
+mutationsCountJan$freq=mutationsCountJan$Count/length(janSamples)*100
+mutationsCountFeb$freq=mutationsCountFeb$Count/length(febSamples)*100
+mutationsCountMar$freq=mutationsCountMar$Count/length(marSamples)*100
+mutationsCountFeb$diffFromJan <- mutationsCountFeb$freq - mutationsCountJan$freq[match(mutationsCountFeb$AAMutation, mutationsCountJan$AAMutation)]
+mutationsCountMar$diffFromFeb <- mutationsCountMar$freq - mutationsCountFeb$freq[match(mutationsCountMar$AAMutation, mutationsCountFeb$AAMutation)]
+mutationsCountJan$protein <- janMutations$protein[match(mutationsCountJan$AAMutation,janMutations$AAMutation)]
+mutationsCountFeb$protein <- febMutations$protein[match(mutationsCountFeb$AAMutation,febMutations$AAMutation)]
+mutationsCountMar$protein <- marMutations$protein[match(mutationsCountMar$AAMutation,marMutations$AAMutation)]
+mutationsCountJan <- mutationsCountJan[c(4,1,2,3)]
+mutationsCountFeb <- mutationsCountFeb[c(5,1,2,3,4)]
+mutationsCountMar <- mutationsCountMar[c(5,1,2,3,4)]
+```
+
+
+Freq by genes
+```{r}
+mutPerGeneJan=janMutations %>% group_by(protein)%>% summarise(Count=n())
+mutPerGeneFeb=febMutations %>% group_by(protein)%>% summarise(Count=n())
+mutPerGeneMar=marMutations %>% group_by(protein)%>% summarise(Count=n())
+mutPerGeneJan$freq=mutPerGeneJan$Count/length(janSamples)*100
+mutPerGeneFeb$freq=mutPerGeneFeb$Count/length(febSamples)*100
+mutPerGeneMar$freq=mutPerGeneMar$Count/length(marSamples)*100
+
+mutPerGeneFeb$diffFromJan <- mutPerGeneFeb$freq - mutPerGeneJan$freq[match(mutPerGeneFeb$protein, mutPerGeneJan$protein)]
+mutPerGeneMar$diffFromFeb <- mutPerGeneMar$freq - mutPerGeneFeb$freq[match(mutPerGeneMar$protein, mutPerGeneFeb$protein)]
+```
+
+
+
+Freq by Nucleotides Mutations
+```{r}
+mutNucCountJan=janMutations %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountFeb=febMutations %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountMar=marMutations %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountJan$freq=mutNucCountJan$Count/length(janSamples)*100
+mutNucCountFeb$freq=mutNucCountFeb$Count/length(febSamples)*100
+mutNucCountMar$freq=mutNucCountMar$Count/length(marSamples)*100
+mutNucCountFeb$diffFromJan <- mutNucCountFeb$freq - mutNucCountJan$freq[match(mutNucCountFeb$nuc.name, mutNucCountJan$nuc.name)]
+mutNucCountMar$diffFromFeb <- mutNucCountMar$freq - mutNucCountFeb$freq[match(mutNucCountMar$nuc.name, mutNucCountFeb$nuc.name)]
+
+mutNucCountFeb$newFreq <- mutNucCountFeb$diffFromJan/mutNucCountFeb$freq*100
+mutNucCountMar$newFreq <- mutNucCountMar$diffFromFeb/mutNucCountMar$freq*100
+mutNucCountFeb$colC <- ifelse(mutNucCountFeb$newFreq > 10 & mutNucCountFeb$freq>5, 1, 0)
+mutNucCountMar$colC <- ifelse(mutNucCountMar$newFreq > 10 & mutNucCountMar$freq>5, 1, 0)
+
+
+mutNucCountJan$AAMutation <- janMutations$AAMutation[match(mutNucCountJan$nuc.name,janMutations$nuc.name)]
+mutNucCountFeb$AAMutation <- febMutations$AAMutation[match(mutNucCountFeb$nuc.name,febMutations$nuc.name)]
+mutNucCountMar$AAMutation <- marMutations$AAMutation[match(mutNucCountMar$nuc.name,marMutations$nuc.name)]
+
+
+mutNucCountJan$protein <- janMutations$protein[match(mutNucCountJan$nuc.name,janMutations$nuc.name)]
+mutNucCountFeb$protein <- febMutations$protein[match(mutNucCountFeb$nuc.name,febMutations$nuc.name)]
+mutNucCountMar$protein <- marMutations$protein[match(mutNucCountMar$nuc.name,marMutations$nuc.name)]
+
+mutNucCountMar <- mutNucCountMar[c(6,5,1,2,3,4)]
+mutNucCountFeb <- mutNucCountFeb[c(6,5,1,2,3,4)]
+```
+
+
+
+
