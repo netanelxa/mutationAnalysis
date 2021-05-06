@@ -1,107 +1,196 @@
+---
+title: "Frequency Table"
+author: "Neta Zuckerman Lab"
+date: "6/5/2021"
+output:
+  html_document:
+    theme: united
 
-```{r}
+---
+
+
+```{r, echo=FALSE,warning=FALSE,results='hide',message=FALSE}
 library(dplyr)
-```
-
-```{r}
-janMutations <- read.csv(file = 'uk_jan.csv')
-febMutations <- read.csv(file = 'uk_feb.csv')
-marMutations <- read.csv(file = 'uk_mar.csv')
-head(janMutations)
-```
-
-```{r}
-janSamples =unique(janMutations$Sequence.ID)
-febSamples =unique(febMutations$Sequence.ID)
-marSamples =unique(marMutations$Sequence.ID)
-head(janSamples)
+library(tidyr)
+library(ggplot2)
+library(hrbrthemes)
+library(viridis)
+library(plotly)
 ```
 
 
-```{r}
-numOfMutationsJan=janMutations %>% group_by(Sequence.ID)%>% summarise(Count=n())
-numOfMutationsFeb=febMutations %>% group_by(Sequence.ID)%>% summarise(Count=n())
-numOfMutationsMar=marMutations %>% group_by(Sequence.ID)%>% summarise(Count=n())
-head(numOfMutationsJan)
-```
-
-```{r}
-summary(numOfMutationsJan$Count)
-```
-
-```{r}
-summary(numOfMutationsFeb$Count)
-```
-
-```{r}
-summary(numOfMutationsMar$Count)
+```{r, echo=FALSE,warning=FALSE,results='hide'}
+janMutations1 <- read.csv(file = 'uk_jan1.csv')
+janMutations2 <- read.csv(file = 'uk_jan2.csv')
+febMutations1 <- read.csv(file = 'uk_feb1.csv')
+febMutations2 <- read.csv(file = 'uk_feb2.csv')
+marMutations1 <- read.csv(file = 'uk_mar1.csv')
+marMutations2 <- read.csv(file = 'uk_mar2.csv')
 ```
 
 
-Freq by AA Mutations
-```{r}
-mutationsCountJan=janMutations %>% group_by(AAMutation)%>% summarise(Count=n())
-mutationsCountFeb=febMutations %>% group_by(AAMutation)%>% summarise(Count=n())
-mutationsCountMar=marMutations %>% group_by(AAMutation)%>% summarise(Count=n())
-mutationsCountJan$freq=mutationsCountJan$Count/length(janSamples)*100
-mutationsCountFeb$freq=mutationsCountFeb$Count/length(febSamples)*100
-mutationsCountMar$freq=mutationsCountMar$Count/length(marSamples)*100
-mutationsCountFeb$diffFromJan <- mutationsCountFeb$freq - mutationsCountJan$freq[match(mutationsCountFeb$AAMutation, mutationsCountJan$AAMutation)]
-mutationsCountMar$diffFromFeb <- mutationsCountMar$freq - mutationsCountFeb$freq[match(mutationsCountMar$AAMutation, mutationsCountFeb$AAMutation)]
-mutationsCountJan$protein <- janMutations$protein[match(mutationsCountJan$AAMutation,janMutations$AAMutation)]
-mutationsCountFeb$protein <- febMutations$protein[match(mutationsCountFeb$AAMutation,febMutations$AAMutation)]
-mutationsCountMar$protein <- marMutations$protein[match(mutationsCountMar$AAMutation,marMutations$AAMutation)]
-mutationsCountJan <- mutationsCountJan[c(4,1,2,3)]
-mutationsCountFeb <- mutationsCountFeb[c(5,1,2,3,4)]
-mutationsCountMar <- mutationsCountMar[c(5,1,2,3,4)]
+```{r, echo=FALSE,warning=FALSE,results='hide'}
+janSamples1 =unique(janMutations1$Sequence.ID)
+janSamples2 =unique(janMutations2$Sequence.ID)
+febSamples1 =unique(febMutations1$Sequence.ID)
+febSamples2 =unique(febMutations2$Sequence.ID)
+marSamples1 =unique(marMutations1$Sequence.ID)
+marSamples2 =unique(marMutations2$Sequence.ID)
 ```
 
 
-Freq by genes
-```{r}
-mutPerGeneJan=janMutations %>% group_by(protein)%>% summarise(Count=n())
-mutPerGeneFeb=febMutations %>% group_by(protein)%>% summarise(Count=n())
-mutPerGeneMar=marMutations %>% group_by(protein)%>% summarise(Count=n())
-mutPerGeneJan$freq=mutPerGeneJan$Count/length(janSamples)*100
-mutPerGeneFeb$freq=mutPerGeneFeb$Count/length(febSamples)*100
-mutPerGeneMar$freq=mutPerGeneMar$Count/length(marSamples)*100
+```{r, echo=FALSE,warning=FALSE,results='hide'}
+mutNucCountJan1=janMutations1 %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountJan2=janMutations2 %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountFeb1=febMutations1 %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountFeb2=febMutations2 %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountMar1=marMutations1 %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountMar2=marMutations2 %>% group_by(nuc.name)%>% summarise(Count=n())
+mutNucCountJan1$freq=mutNucCountJan1$Count/length(janSamples1)*100
+mutNucCountJan2$freq=mutNucCountJan2$Count/length(janSamples2)*100
+mutNucCountFeb1$freq=mutNucCountFeb1$Count/length(febSamples1)*100
+mutNucCountFeb2$freq=mutNucCountFeb2$Count/length(febSamples2)*100
+mutNucCountMar1$freq=mutNucCountMar1$Count/length(marSamples1)*100
+mutNucCountMar2$freq=mutNucCountMar2$Count/length(marSamples2)*100
 
-mutPerGeneFeb$diffFromJan <- mutPerGeneFeb$freq - mutPerGeneJan$freq[match(mutPerGeneFeb$protein, mutPerGeneJan$protein)]
-mutPerGeneMar$diffFromFeb <- mutPerGeneMar$freq - mutPerGeneFeb$freq[match(mutPerGeneMar$protein, mutPerGeneFeb$protein)]
+
+mutNucCountJan1$AAMutation <- janMutations1$AAMutation[match(mutNucCountJan1$nuc.name,janMutations1$nuc.name)]
+mutNucCountJan2$AAMutation <- janMutations2$AAMutation[match(mutNucCountJan2$nuc.name,janMutations2$nuc.name)]
+mutNucCountFeb1$AAMutation <- febMutations1$AAMutation[match(mutNucCountFeb1$nuc.name,febMutations1$nuc.name)]
+mutNucCountFeb2$AAMutation <- febMutations2$AAMutation[match(mutNucCountFeb2$nuc.name,febMutations2$nuc.name)]
+mutNucCountMar1$AAMutation <- marMutations1$AAMutation[match(mutNucCountMar1$nuc.name,marMutations1$nuc.name)]
+mutNucCountMar2$AAMutation <- marMutations2$AAMutation[match(mutNucCountMar2$nuc.name,marMutations2$nuc.name)]
+
+mutNucCountJan1$protein <- janMutations1$protein[match(mutNucCountJan1$nuc.name,janMutations1$nuc.name)]
+mutNucCountJan2$protein <- janMutations2$protein[match(mutNucCountJan2$nuc.name,janMutations2$nuc.name)]
+mutNucCountFeb1$protein <- febMutations1$protein[match(mutNucCountFeb1$nuc.name,febMutations1$nuc.name)]
+mutNucCountFeb2$protein <- febMutations2$protein[match(mutNucCountFeb2$nuc.name,febMutations2$nuc.name)]
+mutNucCountMar1$protein <- marMutations1$protein[match(mutNucCountMar1$nuc.name,marMutations1$nuc.name)]
+mutNucCountMar2$protein <- marMutations2$protein[match(mutNucCountMar2$nuc.name,marMutations2$nuc.name)]
+
+```
+
+
+```{r, echo=FALSE,warning=FALSE,results='hide'}
+alltable=rbind(janMutations1, janMutations2,febMutations1,febMutations2,marMutations1,marMutations2)
+
+alltable<-alltable[!duplicated(alltable$nuc.name), ]
+
+alltable <- alltable[c(9,5,6,7)]
+
+alltable$Jan1freq<-mutNucCountJan1$freq[match(alltable$nuc.name,mutNucCountJan1$nuc.name)]
+alltable$Jan2freq<-mutNucCountJan2$freq[match(alltable$nuc.name,mutNucCountJan2$nuc.name)]
+alltable$Feb1freq<-mutNucCountFeb1$freq[match(alltable$nuc.name,mutNucCountFeb1$nuc.name)]
+alltable$Feb2freq<-mutNucCountFeb2$freq[match(alltable$nuc.name,mutNucCountFeb2$nuc.name)]
+alltable$Mar1freq<-mutNucCountMar1$freq[match(alltable$nuc.name,mutNucCountMar1$nuc.name)]
+alltable$Mar2freq<-mutNucCountMar2$freq[match(alltable$nuc.name,mutNucCountMar2$nuc.name)]
+
+#alltable$colC <- ifelse(alltable$Mar1freq - alltable$Jan1freq < -10, 1, 0)
+
+
 ```
 
 
 
-Freq by Nucleotides Mutations
-```{r}
-mutNucCountJan=janMutations %>% group_by(nuc.name)%>% summarise(Count=n())
-mutNucCountFeb=febMutations %>% group_by(nuc.name)%>% summarise(Count=n())
-mutNucCountMar=marMutations %>% group_by(nuc.name)%>% summarise(Count=n())
-mutNucCountJan$freq=mutNucCountJan$Count/length(janSamples)*100
-mutNucCountFeb$freq=mutNucCountFeb$Count/length(febSamples)*100
-mutNucCountMar$freq=mutNucCountMar$Count/length(marSamples)*100
-mutNucCountFeb$diffFromJan <- mutNucCountFeb$freq - mutNucCountJan$freq[match(mutNucCountFeb$nuc.name, mutNucCountJan$nuc.name)]
-mutNucCountMar$diffFromFeb <- mutNucCountMar$freq - mutNucCountFeb$freq[match(mutNucCountMar$nuc.name, mutNucCountFeb$nuc.name)]
-
-mutNucCountFeb$newFreq <- mutNucCountFeb$diffFromJan/mutNucCountFeb$freq*100
-mutNucCountMar$newFreq <- mutNucCountMar$diffFromFeb/mutNucCountMar$freq*100
-mutNucCountFeb$colC <- ifelse(mutNucCountFeb$newFreq > 10 & mutNucCountFeb$freq>5, 1, 0)
-mutNucCountMar$colC <- ifelse(mutNucCountMar$newFreq > 10 & mutNucCountMar$freq>5, 1, 0)
 
 
-mutNucCountJan$AAMutation <- janMutations$AAMutation[match(mutNucCountJan$nuc.name,janMutations$nuc.name)]
-mutNucCountFeb$AAMutation <- febMutations$AAMutation[match(mutNucCountFeb$nuc.name,febMutations$nuc.name)]
-mutNucCountMar$AAMutation <- marMutations$AAMutation[match(mutNucCountMar$nuc.name,marMutations$nuc.name)]
 
 
-mutNucCountJan$protein <- janMutations$protein[match(mutNucCountJan$nuc.name,janMutations$nuc.name)]
-mutNucCountFeb$protein <- febMutations$protein[match(mutNucCountFeb$nuc.name,febMutations$nuc.name)]
-mutNucCountMar$protein <- marMutations$protein[match(mutNucCountMar$nuc.name,marMutations$nuc.name)]
 
-mutNucCountMar <- mutNucCountMar[c(6,5,1,2,3,4)]
-mutNucCountFeb <- mutNucCountFeb[c(6,5,1,2,3,4)]
+
+```{r, echo=FALSE,warning=FALSE,results='hide'}
+
+
+filtered =alltable %>% pivot_longer(contains("freq"), names_to = "month", values_to = "value") %>% 
+  filter(value > 10)
+
+for (i in 1:length(filtered$month)){ 
+  if ((filtered$month[i]) == "Jan1freq"){ 
+  filtered$month[i] <- "1/1/2021" 
+  } 
+} 
+for (i in 1:length(filtered$month)){ 
+  if ((filtered$month[i]) == "Jan2freq"){ 
+  filtered$month[i] <- "14/1/2021" 
+  } 
+} 
+for (i in 1:length(filtered$month)){ 
+  if ((filtered$month[i]) == "Feb1freq"){ 
+  filtered$month[i] <- "1/2/2021" 
+  } 
+} 
+for (i in 1:length(filtered$month)){ 
+  if ((filtered$month[i]) == "Feb2freq"){ 
+  filtered$month[i] <- "14/2/2021" 
+  } 
+} 
+for (i in 1:length(filtered$month)){ 
+  if ((filtered$month[i]) == "Mar1freq"){ 
+  filtered$month[i] <- "1/3/2021" 
+  } 
+} 
+for (i in 1:length(filtered$month)){ 
+  if ((filtered$month[i]) == "Mar2freq"){ 
+  filtered$month[i] <- "14/3/2021" 
+  } 
+} 
+
+
+
+filtered <- transform(filtered, month = as.Date(month,format = "%d/%m/%Y"))
+
+
 ```
 
 
+
+
+
+
+```{r,echo=FALSE}
+library(forcats)
+
+pl <- filtered %>% 
+  ggplot(aes(x = month, y = value, color = fct_reorder(AAMutation,desc(value)), shape=protein,group=1)) +
+  theme_ipsum()+
+  scale_color_viridis(discrete = TRUE)+
+geom_point(show.legend=F)+
+  geom_line(show.legend = F)
+
+
+
+plotly_build(pl) %>%
+layout(updatemenus = list(
+    list(
+        type = "buttons",
+        direction = "right",
+        xanchor = "center",
+        yanchor = "top",
+        showactive = FALSE,
+        x = 1.05,
+        y = -0.25,
+        buttons = list(
+            list(method = "restyle",
+                 args = list("visible", "all"),
+                 label = "show all"),
+            list(method = "restyle",
+                 args = list("visible", "legendonly"),
+                 label = "hide all")
+        )
+    )
+))
+```
+
+
+
+#### x axis - every two weeks of a month
+
+#### y axis - frequency
+
+### How to use
+
+#### Hide all then choose specific mutations
+
+#### The data filtered and there are only mutations that their freq in any date were > 10%
 
 
